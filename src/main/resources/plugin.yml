@@ -1,0 +1,4 @@
+name: CannonAccessories
+version: '1.0.0'
+main: me.samsuik.accessories.CannonAccessories
+api-version: 1.19
