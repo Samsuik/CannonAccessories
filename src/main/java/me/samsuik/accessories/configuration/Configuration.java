@@ -5,11 +5,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class Configuration {
 
-    public boolean hasTNTSpread;
+    public TNTSpreadType tntSpread;
     public boolean heightParity;
     public boolean regenWalls;
     public RaidableDefences defences;
@@ -18,7 +19,7 @@ public class Configuration {
         FileConfiguration config = plugin.getConfig();
         MemoryConfiguration def = new MemoryConfiguration();
 
-        def.set("tnt-spread", true);
+        def.set("tnt-spread-mode", "all");
         def.set("height-parity", false);
         def.set("regen-walls", true);
         def.set("unraidable-defences", "allowed");
@@ -26,11 +27,14 @@ public class Configuration {
         config.setDefaults(def);
         config.options().copyDefaults(true);
 
-        config.setComments("tnt-spread", List.of(
+        config.setComments("tnt-spread-mode", List.of(
                 "Controls whether TNT upon spawning has random horizontal velocity",
-                "Disabling this can help with performance and allow players to make smaller designs."
+                "Disabling this can help with performance and allow players to make smaller designs.",
+                "\"all\": Allow TNT to spread, same as vanilla",
+                "\"up\": Only allow TNT to bounce upon spawning",
+                "\"none\": Completely disables TNT spread"
         ));
-        hasTNTSpread = config.getBoolean("tnt-spread");
+        tntSpread = value(TNTSpreadType.class, config.getString("tnt-spread-mode"), "all");
 
         config.setComments("height-parity", List.of(
                 "Makes Explosions affect Falling Blocks from the same point as TNT"
@@ -54,21 +58,19 @@ public class Configuration {
                 "- Partial full block defences will all be destroyed by TNT.",
                 "NOTE: TNT and Sand have to travel at least 48 blocks before this is applied."
         ));
-        defences = Objects.requireNonNullElse(getDefences(config.getString("unraidable-defences")), RaidableDefences.ALLOWED);
+        defences = value(RaidableDefences.class, config.getString("unraidable-defences"), "allowed");
 
         plugin.saveConfig();
     }
 
-    private RaidableDefences getDefences(String string) {
-        try {
-            return RaidableDefences.values()[Integer.parseInt(string)];
-        } catch (NumberFormatException ignored) {}
+    private <T extends Enum<T>> T value(Class<T> enumclass, String res, String def) {
+        return Enum.valueOf(enumclass, Objects.requireNonNullElse(res, def).toUpperCase(Locale.ROOT));
+    }
 
-        try {
-            return RaidableDefences.valueOf(string.toUpperCase());
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
+    public enum TNTSpreadType {
+        ALL,
+        UP,
+        NONE
     }
 
     public enum RaidableDefences {

@@ -14,7 +14,7 @@ public class CannonAccessories extends JavaPlugin {
         Configuration config = new Configuration();
         config.loadConfig(this);
 
-        if (!config.hasTNTSpread || config.heightParity) {
+        if (config.tntSpread != Configuration.TNTSpreadType.ALL || config.heightParity) {
             EntitySpawnListener spawnListener = new EntitySpawnListener(config, this);
             Bukkit.getPluginManager().registerEvents(spawnListener, this);
         }

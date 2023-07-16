@@ -30,8 +30,12 @@ public class EntitySpawnListener implements Listener {
     public void onSpawn(EntitySpawnEvent event) {
         Entity entity = event.getEntity();
 
-        if (!config.hasTNTSpread && entity instanceof TNTPrimed) {
-            entity.setVelocity(entity.getVelocity().multiply(new Vector(0,1,0)));
+        if (entity instanceof TNTPrimed) {
+            if (config.tntSpread == Configuration.TNTSpreadType.UP) {
+                entity.setVelocity(entity.getVelocity().multiply(new Vector(0, 1, 0)));
+            } else if (config.tntSpread == Configuration.TNTSpreadType.NONE) {
+                entity.setVelocity(entity.getVelocity().multiply(new Vector(0, 0, 0)));
+            }
         }
 
         if (config.heightParity && entity instanceof FallingBlock fb) {
