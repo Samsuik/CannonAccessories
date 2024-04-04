@@ -12,8 +12,8 @@ public class CannonAccessories extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Configuration config = new Configuration();
-        config.loadConfig(this);
+        Configuration config = new Configuration(this);
+        config.loadConfig();
 
         for (Module module : modules) {
             if (module.isEnabled(config)) {

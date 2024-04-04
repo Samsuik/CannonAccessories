@@ -3,7 +3,7 @@ package me.samsuik.accessories.modules;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.papermc.paper.event.entity.EntityInsideBlockEvent;
 import me.samsuik.accessories.configuration.Configuration;
-import me.samsuik.accessories.configuration.Configuration.RaidableDefences;
+import me.samsuik.accessories.configuration.Configuration.UnraidableDefences;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -29,7 +29,7 @@ public final class UnraidableDefenceModule extends Module {
 
     @Override
     public boolean isEnabled(Configuration configuration) {
-        return configuration.defences.isPartial();
+        return configuration.unraidableDefences.isPartialAllowed();
     }
 
     @EventHandler
@@ -39,7 +39,7 @@ public final class UnraidableDefenceModule extends Module {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onExplosion(EntityExplodeEvent event) {
-        if (event.getEntity() instanceof TNTPrimed tnt && this.getConfiguration().defences.isPartial() && this.isOutsideCannon(tnt)) {
+        if (event.getEntity() instanceof TNTPrimed tnt && this.getConfiguration().unraidableDefences.isPartialAllowed() && this.isOutsideCannon(tnt)) {
             Location location = tnt.getLocation();
 
             if (!this.checked.add(location)) {
@@ -76,7 +76,7 @@ public final class UnraidableDefenceModule extends Module {
 
                 Block block = next.getBlock();
 
-                if ((lava || this.getConfiguration().defences == RaidableDefences.DISALLOWED) && this.isPartialBlock(block.getCollisionShape()) || this.isWaterLogged(block)) {
+                if ((lava || this.getConfiguration().unraidableDefences == UnraidableDefences.DISALLOWED) && this.isPartialBlock(block.getCollisionShape()) || this.isWaterLogged(block)) {
                     blockList.add(block);
                     queue.add(next);
                 }
@@ -102,7 +102,7 @@ public final class UnraidableDefenceModule extends Module {
 
     @EventHandler
     public void onInsideBlock(EntityInsideBlockEvent event) {
-        if (this.getConfiguration().defences == RaidableDefences.DISALLOWED && this.isCannonEntity(event.getEntity()) && this.isOutsideCannon(event.getEntity())) {
+        if (this.getConfiguration().unraidableDefences == UnraidableDefences.DISALLOWED && this.isCannonEntity(event.getEntity()) && this.isOutsideCannon(event.getEntity())) {
             event.setCancelled(true);
         }
     }
