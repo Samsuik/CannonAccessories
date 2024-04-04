@@ -44,7 +44,7 @@ public abstract class BaseConfiguration {
     protected final <T extends Enum<T>> T getEnum(String path, T def, String... comments) {
         String name = def.name().toLowerCase(Locale.ROOT);
         this.updateDefaultOf(path, name, comments);
-        return Enum.valueOf(def.getDeclaringClass(), this.internal.getString(path, name));
+        return Enum.valueOf(def.getDeclaringClass(), this.internal.getString(path, name).toUpperCase(Locale.ROOT));
     }
 
     protected final Set<Material> getMaterials(String path, List<Material> materials, String... comments) {
