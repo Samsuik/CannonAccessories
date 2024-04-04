@@ -8,6 +8,7 @@ public final class Configuration extends BaseConfiguration {
     public boolean regenWalls;
     public UnraidableDefences unraidableDefences;
     public boolean arrowCannons;
+    public boolean protectBlocksAtSkylimit;
 
     public Configuration(JavaPlugin plugin) {
         super(plugin);
@@ -38,6 +39,11 @@ public final class Configuration extends BaseConfiguration {
                 "NOTE: TNT and Sand have to travel at least 48 blocks before this is applied."
         );
         this.arrowCannons = this.getBoolean("arrow-cannons", true, "Controls whether arrow cannons can instant kill players.");
+        this.protectBlocksAtSkylimit = getBoolean("protect-blocks-at-skylimit", false,
+                "Controls whether explosions can break blocks at build limit." +
+                        "Works the same as on complex and other servers that implement similar behaviour." +
+                        "NOTE: This can make regen walls more viable to build and difficult to raid."
+        );
     }
 
     public enum TNTSpreadType {
