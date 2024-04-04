@@ -8,7 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 
 public class CannonAccessories extends JavaPlugin {
-    private final List<Module> modules = List.of(new UnraidableDefenceModule(), new FallingBlockParityModule(), new RegenWallsModule(), new TNTSpreadModule());
+    private final List<Module> modules = List.of(new UnraidableDefenceModule(), new FallingBlockParityModule(), new RegenWallsModule(), new TNTSpreadModule(), new ArrowCannonModule());
 
     @Override
     public void onEnable() {

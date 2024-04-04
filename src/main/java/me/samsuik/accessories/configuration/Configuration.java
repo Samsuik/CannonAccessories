@@ -7,6 +7,7 @@ public final class Configuration extends BaseConfiguration {
     public boolean heightParity;
     public boolean regenWalls;
     public UnraidableDefences unraidableDefences;
+    public boolean arrowCannons;
 
     public Configuration(JavaPlugin plugin) {
         super(plugin);
@@ -36,6 +37,7 @@ public final class Configuration extends BaseConfiguration {
                 "- Partial full block defences will all be destroyed by TNT.",
                 "NOTE: TNT and Sand have to travel at least 48 blocks before this is applied."
         );
+        this.arrowCannons = this.getBoolean("arrow-cannons", true, "Controls whether arrow cannons can instant kill players.");
     }
 
     public enum TNTSpreadType {
