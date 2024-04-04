@@ -29,7 +29,7 @@ public final class UnraidableDefenceModule extends Module {
 
     @Override
     public boolean isEnabled(Configuration configuration) {
-        return configuration.unraidableDefences.isPartialAllowed();
+        return configuration.unraidableDefences.isPartiallyAllowed();
     }
 
     @EventHandler
@@ -39,7 +39,7 @@ public final class UnraidableDefenceModule extends Module {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onExplosion(EntityExplodeEvent event) {
-        if (event.getEntity() instanceof TNTPrimed tnt && this.getConfiguration().unraidableDefences.isPartialAllowed() && this.isOutsideCannon(tnt)) {
+        if (event.getEntity() instanceof TNTPrimed tnt && this.getConfiguration().unraidableDefences.isPartiallyAllowed() && this.isOutsideCannon(tnt)) {
             Location location = tnt.getLocation();
 
             if (!this.checked.add(location)) {
@@ -102,7 +102,8 @@ public final class UnraidableDefenceModule extends Module {
 
     @EventHandler
     public void onInsideBlock(EntityInsideBlockEvent event) {
-        if (this.getConfiguration().unraidableDefences == UnraidableDefences.DISALLOWED && this.isCannonEntity(event.getEntity()) && this.isOutsideCannon(event.getEntity())) {
+        Entity entity = event.getEntity();
+        if (this.getConfiguration().unraidableDefences == UnraidableDefences.DISALLOWED && this.isCannonEntity(entity) && this.isOutsideCannon(entity)) {
             event.setCancelled(true);
         }
     }

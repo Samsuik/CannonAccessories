@@ -57,7 +57,7 @@ public final class Configuration extends BaseConfiguration {
         PARTIAL,
         DISALLOWED;
 
-        public final boolean isPartialAllowed() {
+        public final boolean isPartiallyAllowed() {
             return this != ALLOWED;
         }
     }
