@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Configuration {
-
+public final class Configuration {
     public TNTSpreadType tntSpread;
     public boolean heightParity;
     public boolean regenWalls;
@@ -74,9 +73,12 @@ public class Configuration {
     }
 
     public enum RaidableDefences {
-        ALLOWED,    // Allow all defences even if they're unraidable.
-        PARTIAL,    // Prevent waterlogged defences and _watered_ partial full blocks
-        DISALLOWED; // Prevent all variations of "unraidable" defences even if they can be raided.
-    }
+        ALLOWED,
+        PARTIAL,
+        DISALLOWED;
 
+        public final boolean isPartial() {
+            return this != ALLOWED;
+        }
+    }
 }

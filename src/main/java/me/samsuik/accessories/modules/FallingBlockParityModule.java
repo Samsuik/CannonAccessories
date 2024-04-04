@@ -1,45 +1,26 @@
-package me.samsuik.accessories.listener;
+package me.samsuik.accessories.modules;
 
 import me.samsuik.accessories.configuration.Configuration;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class EntitySpawnListener implements Listener {
-
+public final class FallingBlockParityModule extends Module {
     private static Field NMS_ENTITY_EYE_HEIGHT;
 
-    private final Configuration config;
-    private final JavaPlugin plugin;
-
-    public EntitySpawnListener(Configuration config, JavaPlugin plugin) {
-        this.config = config;
-        this.plugin = plugin;
+    @Override
+    public boolean isEnabled(Configuration configuration) {
+        return configuration.heightParity;
     }
 
     @EventHandler
     public void onSpawn(EntitySpawnEvent event) {
-        Entity entity = event.getEntity();
-
-        if (entity instanceof TNTPrimed) {
-            if (config.tntSpread == Configuration.TNTSpreadType.UP) {
-                entity.setVelocity(entity.getVelocity().multiply(new Vector(0, 1, 0)));
-            } else if (config.tntSpread == Configuration.TNTSpreadType.NONE) {
-                entity.setVelocity(entity.getVelocity().multiply(new Vector(0, 0, 0)));
-            }
-        }
-
-        if (config.heightParity && entity instanceof FallingBlock fb) {
-            updateEntityHeight(fb);
+        if (event.getEntity() instanceof FallingBlock fb) {
+            this.updateEntityHeight(fb);
         }
     }
 
@@ -52,7 +33,7 @@ public class EntitySpawnListener implements Listener {
             assert eyeHeight != null;
             eyeHeight.set(nmsFB, 0.0f);
         } catch (Exception e) {
-            Bukkit.getPluginManager().disablePlugin(plugin);
+            Bukkit.getPluginManager().disablePlugin(this.getPlugin());
             throw new RuntimeException("Unable to update Falling Block height", e);
         }
     }
@@ -74,5 +55,4 @@ public class EntitySpawnListener implements Listener {
 
         return null;
     }
-
 }

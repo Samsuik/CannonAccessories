@@ -1,8 +1,9 @@
-package me.samsuik.accessories.listener;
+package me.samsuik.accessories.modules;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.papermc.paper.event.entity.EntityInsideBlockEvent;
 import me.samsuik.accessories.configuration.Configuration;
+import me.samsuik.accessories.configuration.Configuration.RaidableDefences;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -13,52 +14,48 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.VoxelShape;
 
 import java.util.*;
 
-public class DefenceListener implements Listener {
-
+public final class UnraidableDefenceModule extends Module {
     private static final BoundingBox PARTIAL_BLOCK = new BoundingBox(0.4375, 0.0, 0.4375, 0.5625, 1.0, 0.5625);
-    private static final BlockFace[] FACES = BlockFace.values();
+    private static final BlockFace[] DIRECTIONS = Arrays.copyOf(BlockFace.values(), 6);
+    private static final double OUTSIDE_CANNON_DISTANCE = 48 * 48;
 
     private final Set<Location> checked = new HashSet<>();
-    private final Configuration config;
 
-    public DefenceListener(Configuration config) {
-        this.config = config;
+    @Override
+    public boolean isEnabled(Configuration configuration) {
+        return configuration.defences.isPartial();
     }
 
     @EventHandler
     public void onTick(ServerTickStartEvent event) {
-        checked.clear();
+        this.checked.clear();
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onExplosion(EntityExplodeEvent event) {
-        if (event.getEntity() instanceof TNTPrimed && isFarFromCannon(event.getEntity())) {
-            Location location = event.getEntity().getLocation();
+        if (event.getEntity() instanceof TNTPrimed tnt && this.getConfiguration().defences.isPartial() && this.isOutsideCannon(tnt)) {
+            Location location = tnt.getLocation();
 
-            if (checked.contains(location)) {
+            if (!this.checked.add(location)) {
                 return;
-            } else {
-                checked.add(location);
             }
 
             Block block = location.getBlock();
-            Material type = block.getType();
-
-            boolean waterLogged = isWaterLogged(block);
+            boolean waterLogged = this.isWaterLogged(block);
 
             if (waterLogged) {
                 event.blockList().add(block);
             }
 
+            Material type = block.getType();
             if (type == Material.LAVA || type == Material.WATER || waterLogged) {
-               searchForPartialBlocks(block.getLocation(), event.blockList(), type == Material.LAVA);
+                this.searchForPartialBlocks(block.getLocation(), event.blockList(), type == Material.LAVA);
             }
         }
     }
@@ -70,21 +67,16 @@ public class DefenceListener implements Listener {
         queue.add(location);
 
         for (Location l; (l = queue.poll()) != null;) {
-            for (int i = 0; i < 6; ++i) {
-                BlockFace face = FACES[i];
+            for (BlockFace face : DIRECTIONS) {
                 Location next = l.clone().add(face.getDirection());
 
-                if (searched.contains(next) || next.distanceSquared(location) >= 4 * 4) {
+                if (!(next.distanceSquared(location) < 4 * 4) || !searched.add(next)) {
                     continue;
-                } else {
-                    searched.add(next);
                 }
 
                 Block block = next.getBlock();
 
-                if ((lava || config.defences == Configuration.RaidableDefences.DISALLOWED)
-                    && isPartialBlock(block.getCollisionShape()) || isWaterLogged(block)
-                ) {
+                if ((lava || this.getConfiguration().defences == RaidableDefences.DISALLOWED) && this.isPartialBlock(block.getCollisionShape()) || this.isWaterLogged(block)) {
                     blockList.add(block);
                     queue.add(next);
                 }
@@ -93,7 +85,7 @@ public class DefenceListener implements Listener {
     }
 
     private boolean isWaterLogged(Block block) {
-        return block.getBlockData() instanceof Waterlogged b && b.isWaterlogged();
+        return block.getBlockData() instanceof Waterlogged blockData && blockData.isWaterlogged();
     }
 
     private boolean isPartialBlock(VoxelShape shape) {
@@ -110,25 +102,22 @@ public class DefenceListener implements Listener {
 
     @EventHandler
     public void onInsideBlock(EntityInsideBlockEvent event) {
-        if (config.defences == Configuration.RaidableDefences.DISALLOWED
-            && (event.getEntity() instanceof TNTPrimed || event.getEntity() instanceof FallingBlock)
-            && isFarFromCannon(event.getEntity())
-        ) {
+        if (this.getConfiguration().defences == RaidableDefences.DISALLOWED && this.isCannonEntity(event.getEntity()) && this.isOutsideCannon(event.getEntity())) {
             event.setCancelled(true);
         }
     }
 
-    private boolean isFarFromCannon(Entity entity) {
-        Location origin = entity.getOrigin();
-        Location location = entity.getLocation();
-
-        if (origin == null || origin.getWorld() != location.getWorld()) {
-            return false;
-        }
-
-        double x = origin.getX() - location.getX();
-        double z = origin.getZ() - location.getZ();
-        return x * x + z * z >= 48 * 48;
+    private boolean isCannonEntity(Entity entity) {
+        return entity instanceof TNTPrimed || entity instanceof FallingBlock;
     }
 
+    private boolean isOutsideCannon(Entity entity) {
+        Location origin = entity.getOrigin();
+        Location location = entity.getLocation();
+        if (origin == null || origin.getWorld() != location.getWorld())
+            return false;
+        double x = origin.getX() - location.getX();
+        double z = origin.getZ() - location.getZ();
+        return x * x + z * z >= OUTSIDE_CANNON_DISTANCE;
+    }
 }

@@ -1,33 +1,24 @@
 package me.samsuik.accessories;
 
 import me.samsuik.accessories.configuration.Configuration;
-import me.samsuik.accessories.listener.DefenceListener;
-import me.samsuik.accessories.listener.EntitySpawnListener;
-import me.samsuik.accessories.listener.RegenListener;
-import org.bukkit.Bukkit;
+import me.samsuik.accessories.modules.*;
+import me.samsuik.accessories.modules.Module;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+
 public class CannonAccessories extends JavaPlugin {
+    private final List<Module> modules = List.of(new UnraidableDefenceModule(), new FallingBlockParityModule(), new RegenWallsModule(), new TNTSpreadModule());
 
     @Override
     public void onEnable() {
         Configuration config = new Configuration();
         config.loadConfig(this);
 
-        if (config.tntSpread != Configuration.TNTSpreadType.ALL || config.heightParity) {
-            EntitySpawnListener spawnListener = new EntitySpawnListener(config, this);
-            Bukkit.getPluginManager().registerEvents(spawnListener, this);
-        }
-
-        if (config.defences != Configuration.RaidableDefences.ALLOWED) {
-            DefenceListener defenceListener = new DefenceListener(config);
-            Bukkit.getPluginManager().registerEvents(defenceListener, this);
-        }
-
-        if (!config.regenWalls) {
-            RegenListener regenListener = new RegenListener();
-            Bukkit.getPluginManager().registerEvents(regenListener, this);
+        for (Module module : modules) {
+            if (module.isEnabled(config)) {
+                module.registerModule(this, config);
+            }
         }
     }
-
 }
