@@ -45,7 +45,7 @@ public final class FallingBlockParityModule extends Module {
 
         boolean foundEntitySize = false;
         for (Field s : clazz.getDeclaredFields()) {
-            if (s.getType().getSimpleName().equals("EntitySize")) {
+            if (s.getType().getSimpleName().equals("EntitySize") || s.getType().getSimpleName().equals("EntityDimensions")) {
                 foundEntitySize = true;
             } else if (foundEntitySize) {
                 s.setAccessible(true);
